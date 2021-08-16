@@ -1,0 +1,42 @@
+{
+    "images": [
+        "https://cafefcdn.com/thumb_w/650/2020/2/13/can20ho20mini207-15815635464611185990805-crop-1581563557061967924017.jpg",
+        "https://cafebiz.cafebizcdn.vn/thumb_w/600/2020/2/13/8089c20df331176f4e2088eca6e8692e446da5ee74cf9690ac8f1024x1024-1581505343931414861121-crop-1581505355563750746684-15815581031811841714750-crop-158155810828255785255.jpg",
+        "https://img.homedy.com/store/images/2019/06/19/can-ho-mini-gia-re-1-636965585916507395.jpg",
+        "https://image.bizlive.vn/1200/uploaded/tuanviet_tt/2016_12_10/minisetop-1481331201_490x294_zdfb.jpg",
+        "https://sites.google.com/site/imuabanbds/_/rsrc/1580787639223/home/meo-thue-can-ho-mini-gia-re/can%20ho%20mini.jpg"
+    ],
+    "name": "Lalahome",
+    "price": 350000,
+    "rating": {
+        "average": 3.5,
+        "total": 50
+    },
+    "unit": "room/month",
+    "address": "Vo Van Ngan street, Thu Duc distric, Ho Chi Minh city",
+    "description": "Luxury, full facility, 100% brandnew",
+    "details": {
+        "area": 30,
+        "capacity": 4,
+        "toilet": 1,
+        "cooking": true,
+        "electricity": {
+            "price": 5,
+            "unit": "k/kWh"
+        },
+        "water": {
+            "price": 50,
+            "unit": "k/person"
+        },
+        "wifi": {
+            "price": 50,
+            "unit": "k/room"
+        },
+        "garbage": {
+            "price": 20,
+            "unit": "k/room"
+        },
+        "facility": ["Air conditioner", "refrigerator", "Television", "Table"],
+        "service": ["Window", "Parking lot", "Guard", "Surveillance camera"]
+    }
+}

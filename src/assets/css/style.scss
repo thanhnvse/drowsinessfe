@@ -1,0 +1,16 @@
+@font-face {
+  font-family: 'Lato';
+  src: url('../fonts/lato-regular.ttf'), url('../fonts/lato-bold.ttf'),
+    url('../fonts/lato-italic.ttf');
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('../fonts/Nunito/Nunito-Regular.ttf'), url('../fonts/Nunito/Nunito-SemiBold.ttf'),
+    url('../fonts/Nunito/Nunito-Black.ttf'), url('../fonts/Nunito/Nunito-Bold.ttf'),
+    url('../fonts/Nunito/Nunito-ExtraBold.ttf'), url('../fonts/Nunito/Nunito-ExtraLight.ttf');
+}
+
+.v-application {
+  font-family: 'Lato' !important;
+}
