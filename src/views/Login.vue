@@ -30,7 +30,9 @@
                     max-height="35"
                   />
                 </div>
-                <span class="font-nunito font-weight-bold ml-13" style="font-size: 1.4rem; color: white"
+                <span
+                  class="font-nunito font-weight-bold ml-13"
+                  style="font-size: 1.4rem; color: white"
                   >Truck Driver Drowsiness Detection</span
                 >
               </div>
@@ -82,7 +84,7 @@
                   <v-btn
                     min-width="100%"
                     class="bg-primary white--text font-nunito align-self-center text-body-2 py-5 bt-primary-hover d-flex align-center mt-2"
-                    style="background-color: #727CF5"
+                    style="background-color: #727cf5"
                     :loading="loging"
                     @click="login(false)"
                   >
@@ -137,7 +139,11 @@ export default {
       usernamePassword: false,
     },
   }),
-  computed: {},
+  computed: {
+    token() {
+      return window.$cookies.get('token');
+    },
+  },
   methods: {
     validateFormUsernamePassword() {
       this.$refs.formUsernamePassword.validate();

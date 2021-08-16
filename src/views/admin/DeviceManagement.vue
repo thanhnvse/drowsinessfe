@@ -71,7 +71,7 @@
                     check.checkName = true;
                     check.checkId = true;
                     check.checkIdFormat = true;
-                    check.checkIdDup = true;
+                    check.checkIdDup = false;
                   "
                 >
                   New Device
@@ -160,7 +160,7 @@
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
                       solo
-                      @change="check.checkName = true"
+                      @change="changeValue0"
                       :error-messages="!getCheckName ? 'The device name can not blank' : ''"
                     ></v-text-field>
                   </v-col>
@@ -180,14 +180,14 @@
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
                       solo
-                      @change="check.checkId = true"
+                      @change="changeValue"
                       :error-messages="
                         !getCheckId
                           ? 'The Serial ID can not blank'
                           : !getCheckIdFormat
-                          ? !getCheckIdDup
-                            ? 'The serial ID has existed'
-                            : 'The Serial ID has format XX:XX:XX:XX:XX:XX'
+                          ? 'The Serial ID has format XX:XX:XX:XX:XX:XX'
+                          : getCheckIdDup
+                          ? 'The serial ID has existed'
                           : ''
                       "
                     ></v-text-field>
@@ -345,7 +345,8 @@
                   <v-col cols="9" class="d-flex justify-center">
                     <v-text-field
                       v-model="updateItem.data.deviceName"
-                      @change="changeValue"
+                      @change="changeValue0"
+                      :error-messages="!getCheckName ? 'The device name can not blank' : ''"
                       placeholder="Fill in device name"
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
@@ -365,7 +366,16 @@
                   <v-col cols="5" class="d-flex justify-center">
                     <v-text-field
                       v-model="updateItem.data.serialId"
-                      @change="changeValue"
+                      @change="changeValue1"
+                      :error-messages="
+                        !getCheckId
+                          ? 'The Serial ID can not blank'
+                          : !getCheckIdFormat
+                          ? 'The Serial ID has format XX:XX:XX:XX:XX:XX'
+                          : !getCheckIdDup
+                          ? 'The serial ID has existed'
+                          : ''
+                      "
                       placeholder="Fill in serial ID"
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
@@ -510,6 +520,7 @@ export default {
       checkIdFormat: true,
       checkIdDup: true,
     },
+    serialId: null,
   }),
 
   computed: {
@@ -602,12 +613,6 @@ export default {
     },
   },
 
-  watch: {
-    dialog(val) {
-      return val || this.close();
-    },
-  },
-
   created() {
     this.getDevices();
   },
@@ -636,7 +641,7 @@ export default {
         this.check.checkName &&
         this.check.checkId &&
         this.check.checkIdFormat &&
-        this.check.checkIdDup
+        !this.check.checkIdDup
       ) {
         this.dialog = false;
         this.createItem.active = true;
@@ -644,13 +649,13 @@ export default {
         if (this.success) {
           this.snackbar = true;
         } else {
-          this.snackbarFail = true;
-          // this.snackbar = true;
+          // this.snackbarFail = true;
+          this.snackbar = true;
         }
-        this.check.checkName = true;
-        this.check.checkId = true;
-        this.check.checkIdFormat = true;
-        this.check.checkIdDup = true;
+        // this.check.checkName = true;
+        // this.check.checkId = true;
+        // this.check.checkIdFormat = true;
+        // this.check.checkIdDup = true;
       }
     },
 
@@ -667,7 +672,33 @@ export default {
           a = true;
         }
       });
+      console.log(a);
       return a;
+    },
+
+    checkDuplicatedUpdate(value) {
+      let a = false;
+      const rest = this.getRestDevice(value);
+      // eslint-disable-next-line array-callback-return
+      rest.filter((item2) => {
+        if (item2.serialId === value) {
+          a = true;
+        }
+      });
+      return a;
+    },
+
+    checkSameValue(value) {
+      let a = false;
+      if (value === this.serialId) {
+        a = true;
+      }
+      console.log(a);
+      return a;
+    },
+
+    getRestDevice(serialId) {
+      return this.devices.filter((item) => item.serialId !== serialId);
     },
 
     editDevice(item) {
@@ -677,11 +708,51 @@ export default {
       this.updateItem.deviceId = item.deviceId;
       this.dialogUpdate = true;
       this.updatable = false;
+      this.serialId = item.serialId;
+      // // default false
+      // this.check.checkName = true;
+      // this.check.checkId = true;
+      // this.check.checkIdFormat = true;
+      // this.check.checkIdDup = true;
     },
 
     updateDeviceInfo() {
-      this.dialogUpdate = false;
-      this.updateDevice(this.updateItem);
+      if (this.updateItem.data.deviceName === '' || this.updateItem.data.deviceName === null) {
+        this.check.checkName = false;
+      }
+      if (this.updateItem.data.serialId === '' || this.updateItem.data.serialId === null) {
+        this.check.checkId = false;
+      } else {
+        this.check.checkIdFormat = this.getValidSerial(this.updateItem.data.serialId);
+        if (this.check.checkIdFormat) {
+          if (this.checkSameValue(this.updateItem.data.serialId)) {
+            this.check.checkIdDup = true;
+          } else {
+            this.check.checkIdDup = this.checkDuplicatedUpdate(this.updateItem.data.serialId);
+          }
+        }
+      }
+
+      if (
+        this.check.checkName &&
+        this.check.checkId &&
+        this.check.checkIdFormat &&
+        this.check.checkIdDup
+      ) {
+        this.dialogUpdate = false;
+        this.updateDevice(this.updateItem);
+        if (this.success) {
+          this.snackbarUpdate = true;
+          // reset value
+          this.check.checkName = false;
+          this.check.checkId = false;
+          this.check.checkIdFormat = false;
+          this.check.checkIdDup = false;
+        } else {
+          this.snackbarUpdate = true;
+          // this.snackbarUpdateFail = true;
+        }
+      }
     },
 
     getColor(active) {
@@ -690,6 +761,21 @@ export default {
     },
     changeValue() {
       this.updatable = true;
+      return this.updatable;
+    },
+    changeValue0() {
+      this.updatable = true;
+      this.check.checkName = true;
+      return this.updatable;
+    },
+    changeValue1() {
+      this.updatable = true;
+      this.check.checkId = true;
+      return this.updatable;
+    },
+    changeValue2() {
+      this.updatable = true;
+      this.check.checkId = true;
       return this.updatable;
     },
     viewUser(device) {

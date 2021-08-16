@@ -36,6 +36,12 @@ const myState = () => ({
     success: null,
     error: null,
   },
+  dataset: {
+    data: null,
+    isLoading: false,
+    success: null,
+    error: null,
+  },
   // deals: {
   //   data: [],
   //   isLoading: false,
@@ -110,24 +116,9 @@ const mutationTypes = {
   GET_DRIVERSINDEVICE_REQUEST: 'GET_DRIVERSINDEVICE_REQUEST',
   GET_DRIVERSINDEVICE_SUCCESS: 'GET_DRIVERSINDEVICE_SUCCESS',
   GET_DRIVERSINDEVICE_FAILURE: 'GET_DRIVERSINDEVICE_FAILURE',
-  // GET_DEALS_REQUEST: 'GET_DEALS_REQUEST',
-  // GET_DEALS_SUCCESS: 'GET_DEALS_SUCCESS',
-  // GET_DEALS_FAILURE: 'GET_DEALS_FAILURE',
-  // CREATE_DEAL_REQUEST: 'CREATE_DEAL_REQUEST',
-  // CREATE_DEAL_SUCCESS: 'CREATE_DEAL_SUCCESS',
-  // CREATE_DEAL_FAILURE: 'CREATE_DEAL_FAILURE',
-  // GET_DEAL_REQUEST: 'GET_DEAL_REQUEST',
-  // GET_DEAL_SUCCESS: 'GET_DEAL_SUCCESS',
-  // GET_DEAL_FAILURE: 'GET_DEAL_FAILURE',
-  // CANCEL_DEAL_REQUEST: 'CANCEL_DEAL_REQUEST',
-  // CANCEL_DEAL_SUCCESS: 'CANCEL_DEAL_SUCCESS',
-  // CANCEL_DEAL_FAILURE: 'CANCEL_DEAL_FAILURE',
-  // CANCEL_BOOKING_REQUEST: 'CANCEL_BOOKING_REQUEST',
-  // CANCEL_BOOKING_SUCCESS: 'CANCEL_BOOKING_SUCCESS',
-  // CANCEL_BOOKING_FAILURE: 'CANCEL_BOOKING_FAILURE',
-  // DONE_BOOKING_REQUEST: 'DONE_BOOKING_REQUEST',
-  // DONE_BOOKING_SUCCESS: 'DONE_BOOKING_SUCCESS',
-  // DONE_BOOKING_FAILURE: 'DONE_BOOKING_FAILURE',
+  CREATE_DATASET_REQUEST: 'CREATE_DATASET_REQUEST',
+  CREATE_DATASET_SUCCESS: 'CREATE_DATASET_SUCCESS',
+  CREATE_DATASET_FAILURE: 'CREATE_DATASET_FAILURE',
 };
 const mutations = {
   CLEAR_USER_DATA(state) {
@@ -292,6 +283,20 @@ const mutations = {
     state.firmwares.isLoading = false;
     state.firmwares.success = false;
     state.firmwares.error = error;
+  },
+
+  CREATE_DATASET_REQUEST(state) {
+    state.dataset.isLoading = true;
+  },
+  CREATE_DATASET_SUCCESS(state, data) {
+    state.dataset.data = data;
+    state.dataset.isLoading = false;
+    state.dataset.success = true;
+  },
+  CREATE_DATASET_FAILURE(state, error) {
+    state.dataset.isLoading = false;
+    state.dataset.success = false;
+    state.dataset.error = error;
   },
   // CREATE_DEAL_REQUEST(state) {
   //   state.deals.isLoading = false;
@@ -608,6 +613,22 @@ const actions = {
     }
   },
 
+  async createFirmwareFromDataset({ commit }, data) {
+    const userId = window.$cookies.get('userId');
+    if (userId) {
+      try {
+        commit(mutationTypes.CREATE_DATASET_REQUEST);
+        const res = await window.axios.post('/api/v1/dataset', data);
+        if (res.status === 201) {
+          commit(mutationTypes.CREATE_DATASET_SUCCESS, data);
+        }
+      } catch (error) {
+        commit(mutationTypes.CREATE_DATASET_FAILURE, error);
+      }
+    } else {
+      throw new Error('You have to login before create a new firmware');
+    }
+  },
   async updateFirmware({ commit }, id) {
     const userId = window.$cookies.get('userId');
     if (userId) {

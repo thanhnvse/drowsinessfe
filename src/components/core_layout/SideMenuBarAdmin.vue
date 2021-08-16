@@ -14,7 +14,7 @@
             class="white d-flex flex-column justify-center align-center"
           >
             <v-img
-              alt="Hostel Renting"
+              alt="TDDD"
               class="shrink ml-1"
               contain
               src="@/assets/sleepy-driver.png"

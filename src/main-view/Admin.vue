@@ -6,7 +6,7 @@
       app
       overflow
     >
-      <side-menu-bar-admin class="d-flex justify-center"/>
+      <side-menu-bar-admin class="d-flex justify-center" />
 
       <template v-slot:append>
         <v-list-item link>
@@ -45,7 +45,29 @@
         max-height="40"
       />
       <v-spacer></v-spacer>
-<!--
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <!-- <v-toolbar color="white" width="40" dense>
+        <v-toolbar-title style="color: #727cf5" > Training...</v-toolbar-title>
+        <v-progress-linear
+          :active="loading"
+          :indeterminate="loading"
+          absolute
+          bottom
+          color="deep-purple accent-4"
+        ></v-progress-linear>
+      </v-toolbar> -->
+      <!--
       <profile-menu v-if="!isLoadingUser" /> -->
     </v-app-bar>
     <!-- Mobile app bar -->
@@ -103,6 +125,7 @@ import authenticationMixins from '../components/mixins/authentication';
 export default {
   name: 'AdminView',
   mixins: [authenticationMixins],
+  // props: ['loading'],
   components: {
     SideMenuBarAdmin,
     // profileMenu,
@@ -127,6 +150,7 @@ export default {
       type: 'temporary',
       clipped: true,
     },
+    // loading: true,
   }),
   methods: {
     ...mapActions({
@@ -136,7 +160,16 @@ export default {
     }),
 
     logout() {
+      this.$router.push('login');
+      window.$cookies.remove('token');
+    },
+  },
+  watch: {
+    loading(val) {
+      if (!val) return;
 
+      // eslint-disable-next-line no-return-assign
+      setTimeout(() => (this.loading = false), 1000 * 60 * 5);
     },
   },
   created() {

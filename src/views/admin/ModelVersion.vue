@@ -23,6 +23,13 @@
           </v-row>
           <v-card class="mt-5 px-5 py-4">
             <v-row>
+              <v-progress-linear
+                :active="loading"
+                :indeterminate="loading"
+                absolute
+                bottom
+                color="deep-purple accent-4"
+              ></v-progress-linear>
               <v-col cols="8">
                 <div class="pb-5">
                   <span
@@ -33,10 +40,26 @@
                 </div>
               </v-col>
               <v-col cols="4">
-                <v-btn color="#727cf5" dark class="mb-2 ml-15" @click="dialog = true">
+                <v-btn
+                  color="#727cf5"
+                  dark
+                  class="mb-2 ml-15"
+                  @click="
+                    dialog = true;
+                    this.updatable = false;
+                  "
+                >
                   Upload Firmware
                 </v-btn>
-                <v-btn color="#727cf5" dark class="mb-2 ml-3" @click="dialogTrain = true">
+                <v-btn
+                  color="#727cf5"
+                  dark
+                  class="mb-2 ml-3"
+                  @click="
+                    dialogTrain = true;
+                    this.updatable = false;
+                  "
+                >
                   Train model
                 </v-btn>
               </v-col>
@@ -64,7 +87,9 @@
                 {{ new Date(item.createdAt).toLocaleDateString() }}
               </template>
               <template v-slot:[`item.actions`]="{ item }">
-                <v-icon small class="mr-2" @click="download(item.modelUrl)"> fas fa-download </v-icon>
+                <v-icon small class="mr-2" @click="download(item.modelUrl)">
+                  fas fa-download
+                </v-icon>
               </template>
               <template v-slot:[`item.active`]="{ item }">
                 <v-icon small color="success" v-if="item.active"> fas fa-check-circle </v-icon>
@@ -90,7 +115,7 @@
                 <span
                   class="font-nunito white--text font-weight-bold"
                   style="font-size: 1.125rem !important"
-                  >Create new Firmware
+                  >Upload Firmware
                 </span>
               </v-card>
               <v-col cols="12">
@@ -109,6 +134,8 @@
                       label="Fill in description"
                       class="pt-5"
                       v-model="createItem.description"
+                      @change="createItem.description"
+                      :error-messages="!getCheckDesc ? 'The description cannot be blank' : ''"
                     ></v-textarea>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-start">
@@ -126,6 +153,14 @@
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
                       solo
+                      @change="changeValue"
+                      :error-messages="
+                        !getCheckTime
+                          ? 'The time detection cannot be blank'
+                          : !getCheckTime1
+                          ? 'The time detect should be greater than 1 to get a good drowsiness detection'
+                          : ''
+                      "
                     ></v-text-field>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-start">
@@ -136,17 +171,6 @@
                     >
                   </v-col>
                   <v-col cols="9" class="d-flex justify-center">
-                    <!-- <v-file-input
-                      v-model="createItem.file"
-                      color="deep-purple accent-4"
-                      counter
-                      label="File input"
-                      placeholder="Select your files"
-                      prepend-icon="mdi-paperclip"
-                      solo
-                      :show-size="1000"
-                      @change="preview(createItem.file)"
-                    > -->
                     <v-file-input
                       v-model="createItem.file"
                       color="deep-purple accent-4"
@@ -156,6 +180,8 @@
                       prepend-icon="mdi-paperclip"
                       solo
                       :show-size="1000"
+                      @change="changeValue"
+                      :error-messages="!getCheckFile ? 'Please upload model file' : ''"
                     >
                       <template v-slot:selection="{ index, text }">
                         <v-chip v-if="index < 2" color="deep-purple accent-4" dark label small>
@@ -174,7 +200,7 @@
                 </v-row>
               </v-col>
               <v-card-actions class="d-flex justify-center">
-                <v-btn color="grey darken-1" text @click="dialog = false"> Cancel </v-btn>
+                <v-btn color="grey darken-1" text @click="resetValue"> Cancel </v-btn>
                 <v-btn color="#727CF5" text @click="createFirmwareInfo"> Create </v-btn>
               </v-card-actions>
             </v-card>
@@ -212,7 +238,9 @@
                       name="input-7-4"
                       label="Fill in description"
                       class="pt-5"
-                      v-model="createItem.description"
+                      v-model="createItemTrain.description"
+                      @change="createItemTrain.description"
+                      :error-messages="!getCheckDesc ? 'The description cannot be blank' : ''"
                     ></v-textarea>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-start">
@@ -224,12 +252,20 @@
                   </v-col>
                   <v-col cols="9" class="d-flex justify-center">
                     <v-text-field
-                      v-model="createItem.timeDetection"
+                      v-model="createItemTrain.timeDetection"
                       placeholder="Fill in time"
                       type="number"
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
                       solo
+                      @change="changeValue"
+                      :error-messages="
+                        !getCheckTime
+                          ? 'The time detection cannot be blank'
+                          : !getCheckTime1
+                          ? 'The time detect should be greater than 1 to get a good drowsiness detection'
+                          : ''
+                      "
                     ></v-text-field>
                   </v-col>
                   <v-col cols="3" class="d-flex justify-start">
@@ -240,19 +276,8 @@
                     >
                   </v-col>
                   <v-col cols="9" class="d-flex justify-center">
-                    <!-- <v-file-input
-                      v-model="createItem.file"
-                      color="deep-purple accent-4"
-                      counter
-                      label="File input"
-                      placeholder="Select your files"
-                      prepend-icon="mdi-paperclip"
-                      solo
-                      :show-size="1000"
-                      @change="preview(createItem.file)"
-                    > -->
                     <v-file-input
-                      v-model="createItem.file"
+                      v-model="createItemTrain.file"
                       color="deep-purple accent-4"
                       counter
                       label="File input"
@@ -260,6 +285,8 @@
                       prepend-icon="mdi-paperclip"
                       solo
                       :show-size="1000"
+                      @change="changeValue"
+                      :error-messages="!getCheckFile ? 'Please upload model file' : ''"
                     >
                       <template v-slot:selection="{ index, text }">
                         <v-chip v-if="index < 2" color="deep-purple accent-4" dark label small>
@@ -278,7 +305,7 @@
                 </v-row>
               </v-col>
               <v-card-actions class="d-flex justify-center">
-                <v-btn color="grey darken-1" text @click="dialogTrain = false"> Cancel </v-btn>
+                <v-btn color="grey darken-1" text @click="resetValue2"> Cancel </v-btn>
                 <v-btn color="#727CF5" text @click="startTrain"> Train </v-btn>
               </v-card-actions>
             </v-card>
@@ -356,6 +383,30 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-snackbar v-model="snackbar" :timeout="timeout" color="green">
+            Upload firmware successfully!
+            <template v-slot:action="{ attrs }">
+              <v-btn color="white" text v-bind="attrs" @click="snackbar = false" outlined>
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
+          <v-snackbar v-model="snackbarFail" :timeout="timeout" color="red">
+            Upload firmware failed!
+            <template v-slot:action="{ attrs }">
+              <v-btn color="white" text v-bind="attrs" @click="snackbarFail = false" outlined>
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
+          <v-snackbar v-model="snackbarTrain" timeout="3000" color="green">
+            Start training process !
+            <template v-slot:action="{ attrs }">
+              <v-btn color="white" text v-bind="attrs" @click="snackbar = false" outlined>
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
         </v-col>
       </v-row>
     </v-container>
@@ -368,11 +419,15 @@ import snackBarMixin from '../../components/mixins/snackBar';
 export default {
   name: 'ModelVersion',
   mixins: [snackBarMixin],
+  // props: ['loading'],
   data: () => ({
     dialog: false,
     dialogTrain: false,
     dialogView: false,
     dialogConfirm: false,
+    snackbar: false,
+    snackbarFail: false,
+    loading: false,
     headers: [
       {
         text: 'No',
@@ -405,6 +460,17 @@ export default {
     previews: [],
     errorImage: 'url of an zip to use to indicate an error',
     firmwareId: '',
+    check: {
+      checkDesc: true,
+      checkTime: true,
+      checkTime1: true,
+      checkFile: true,
+    },
+    createItemTrain: {
+      description: '',
+      file: null,
+      timeDetection: null,
+    },
   }),
 
   computed: {
@@ -412,33 +478,54 @@ export default {
       const firmwares = this.$store.state.user.firmwares.isLoading;
       return firmwares;
     },
-    // ...mapState({
-    //   drivers: (state) => state.user.drivers,
-    // }),
     firmwares() {
       const test = this.$store.state.user.firmwares.data.results;
       if (test) {
-        return test.sort((a, b) => b.createdAt - a.createdAt).sort((a, b) => b.active - a.active).map((items, no) => ({
-        // return test.sort((a, b) => b.createdAt - a.createdAt).map((items, no) => ({
-          ...items,
-          no: no + 1,
-        }));
+        return test
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .sort((a, b) => b.active - a.active)
+          .map((items, no) => ({
+            // return test.sort((a, b) => b.createdAt - a.createdAt).map((items, no) => ({
+            ...items,
+            no: no + 1,
+          }));
       }
       return [];
     },
     token() {
       return window.$cookies.get('token');
     },
+    getCheckDesc() {
+      return this.check.checkDesc;
+    },
+    getCheckTime() {
+      return this.check.checkTime;
+    },
+    getCheckTime1() {
+      return this.check.checkTime1;
+    },
+    getCheckFile() {
+      return this.check.checkFile;
+    },
+    success() {
+      return this.$store.state.user.firmwares.success;
+    },
+    successTrain() {
+      return this.$store.state.user.dataset.success;
+    },
   },
 
   watch: {
-    dialog(val) {
-      return val || this.close();
+    loading(val) {
+      if (!val) return;
+      // eslint-disable-next-line no-return-assign
+      setTimeout(() => (this.loading = false), 1000 * 60 * 5);
     },
   },
 
   created() {
     this.getFirmwares();
+    this.loading = false;
   },
 
   methods: {
@@ -446,6 +533,7 @@ export default {
       getFirmwares: 'user/getFirmwares',
       createFirmware: 'user/createFirmware',
       updateFirmware: 'user/updateFirmware',
+      createFirmwareFromDataset: 'user/createFirmwareFromDataset',
     }),
 
     download(url) {
@@ -458,22 +546,121 @@ export default {
     },
 
     createFirmwareInfo() {
-      this.dialog = false;
-      const formData = new FormData();
-      formData.append('file', this.createItem.file);
-      formData.append('description', this.createItem.description);
-      formData.append('timeDetection', this.createItem.timeDetection);
-      this.createFirmware(formData);
+      if (this.createItem.description === null || this.createItem.description === '') {
+        this.check.checkDesc = false;
+      } else {
+        this.check.checkDesc = true;
+      }
+      if (this.createItem.timeDetection === null || this.createItem.timeDetection === '') {
+        this.check.checkTime = false;
+      } else if (this.createItem.timeDetection <= 1) {
+        this.check.checkTime = true;
+        this.check.checkTime1 = false;
+      } else {
+        this.check.checkTime = true;
+        this.check.checkTime1 = true;
+      }
+      // if (this.createdItem.file instanceof File) {
+      //   // console.log(typeof this.createdItem.file.name === 'string');
+      //   this.check.checkFile = true;
+      // } else {
+      //   this.check.checkFile = false;
+      // }
+      if (
+        this.check.checkDesc &&
+        this.check.checkTime &&
+        this.check.checkTime1
+        // && this.check.checkFile
+      ) {
+        this.dialog = false;
+        const formData = new FormData();
+        formData.append('file', this.createItem.file);
+        formData.append('description', this.createItem.description);
+        formData.append('timeDetection', this.createItem.timeDetection);
+        this.createFirmware(formData);
+        if (this.success) {
+          this.snackbar = true;
+        } else {
+          this.snackbarFail = true;
+          // this.snackbar = true;
+        }
+      }
     },
-
+    resetValue() {
+      this.createItem.description = null;
+      this.createItem.file = null;
+      this.createItem.timeDetection = null;
+      this.check.checkDesc = true;
+      this.check.checkTime = true;
+      this.check.checkTime1 = true;
+      this.check.checkFile = true;
+      this.dialog = false;
+    },
+    resetValue2() {
+      this.createItemTrain.description = null;
+      this.createItemTrain.file = null;
+      this.createItemTrain.timeDetection = null;
+      this.check.checkDesc = true;
+      this.check.checkTime = true;
+      this.check.checkTime1 = true;
+      this.check.checkFile = true;
+      this.dialogTrain = false;
+    },
     activeFirmwareDone() {
       this.dialogConfirm = false;
       this.updateFirmware(this.firmwareId);
       this.firmwareId = '';
     },
 
-    startTrain() {
+    changeValue() {
+      this.updatable = true;
+      return this.updatable;
+    },
 
+    startTrain() {
+      if (this.createItemTrain.description === null || this.createItemTrain.description === '') {
+        this.check.checkDesc = false;
+      } else {
+        this.check.checkDesc = true;
+      }
+      if (
+        this.createItemTrain.timeDetection === null ||
+        this.createItemTrain.timeDetection === ''
+      ) {
+        this.check.checkTime = false;
+      } else if (this.createItemTrain.timeDetection <= 1) {
+        this.check.checkTime = true;
+        this.check.checkTime1 = false;
+      } else {
+        this.check.checkTime = true;
+        this.check.checkTime1 = true;
+      }
+      // if (this.createdItem.file instanceof File) {
+      //   // console.log(typeof this.createdItem.file.name === 'string');
+      //   this.check.checkFile = true;
+      // } else {
+      //   this.check.checkFile = false;
+      // }
+      if (
+        this.check.checkDesc &&
+        this.check.checkTime &&
+        this.check.checkTime1
+        // && this.check.checkFile
+      ) {
+        this.dialogTrain = false;
+        const formData = new FormData();
+        formData.append('file', this.createItemTrain.file);
+        formData.append('description', this.createItemTrain.description);
+        formData.append('timeDetection', this.createItemTrain.timeDetection);
+        this.createFirmwareFromDataset(formData);
+        if (this.successTrain) {
+          this.loading = true;
+          this.snackbarTrain = true;
+        } else {
+          // this.snackbarFail = true;
+          this.snackbar = true;
+        }
+      }
     },
   },
 };
