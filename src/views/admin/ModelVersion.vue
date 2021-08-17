@@ -398,7 +398,7 @@
                 <span
                   class="font-nunito white--text font-weight-bold"
                   style="font-size: 1.125rem !important"
-                  >Confirm upload model
+                  >Confirm upload firmware
                 </span>
               </v-card>
               <v-card-actions class="d-flex justify-center">
