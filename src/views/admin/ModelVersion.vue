@@ -383,6 +383,58 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-dialog v-model="dialogConfirmModel" persistent max-width="290">
+            <v-card>
+              <v-card
+                class="d-flex px-4 py-3 align-center ma-0 justify-center main-bg"
+                style="
+                  border-color: rgb(255, 255, 255);
+                  box-shadow: rgba(154, 161, 171, 0.15) 0px 0px 35px 0px !important;
+                  border-radius: 0px !important;
+                  background-color: #727cf5;
+                "
+              >
+                <v-icon left color="rgb(255, 255, 255, 0.8)">beenhere</v-icon>
+                <span
+                  class="font-nunito white--text font-weight-bold"
+                  style="font-size: 1.125rem !important"
+                  >Confirm upload model
+                </span>
+              </v-card>
+              <v-card-actions class="d-flex justify-center">
+                <v-btn color="grey darken-1" text @click="dialogConfirmModel = false">
+                  Cancel
+                </v-btn>
+                <v-btn color="#727CF5" text @click="confirmUploadModel"> Agree </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="dialogConfirmDataset" persistent max-width="290">
+            <v-card>
+              <v-card
+                class="d-flex px-4 py-3 align-center ma-0 justify-center main-bg"
+                style="
+                  border-color: rgb(255, 255, 255);
+                  box-shadow: rgba(154, 161, 171, 0.15) 0px 0px 35px 0px !important;
+                  border-radius: 0px !important;
+                  background-color: #727cf5;
+                "
+              >
+                <v-icon left color="rgb(255, 255, 255, 0.8)">beenhere</v-icon>
+                <span
+                  class="font-nunito white--text font-weight-bold"
+                  style="font-size: 1.125rem !important"
+                  >Start For Training Process
+                </span>
+              </v-card>
+              <v-card-actions class="d-flex justify-center">
+                <v-btn color="grey darken-1" text @click="dialogConfirmDataset = false">
+                  Cancel
+                </v-btn>
+                <v-btn color="#727CF5" text @click="confirmTrainDataset"> Agree </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
           <v-snackbar v-model="snackbar" :timeout="timeout" color="green">
             Upload firmware successfully!
             <template v-slot:action="{ attrs }">
@@ -425,6 +477,8 @@ export default {
     dialogTrain: false,
     dialogView: false,
     dialogConfirm: false,
+    dialogConfirmModel: false,
+    dialogConfirmDataset: false,
     snackbar: false,
     snackbarFail: false,
     loading: false,
@@ -439,7 +493,7 @@ export default {
       { text: 'Detection Time', value: 'timeDetection' },
       { text: 'Create Date', value: 'createdAt' },
       { text: 'Download', value: 'actions', sortable: false },
-      { text: 'Newest upload', value: 'active', sortable: false },
+      { text: 'Active', value: 'active', sortable: false },
     ],
     files: [],
     createItem: {
@@ -519,7 +573,7 @@ export default {
     loading(val) {
       if (!val) return;
       // eslint-disable-next-line no-return-assign
-      setTimeout(() => (this.loading = false), 1000 * 60 * 5);
+      setTimeout(() => (this.loading = false), 1000 * 60 * 1);
     },
   },
 
@@ -572,20 +626,26 @@ export default {
         this.check.checkTime1
         // && this.check.checkFile
       ) {
-        this.dialog = false;
-        const formData = new FormData();
-        formData.append('file', this.createItem.file);
-        formData.append('description', this.createItem.description);
-        formData.append('timeDetection', this.createItem.timeDetection);
-        this.createFirmware(formData);
-        if (this.success) {
-          this.snackbar = true;
-        } else {
-          this.snackbarFail = true;
-          // this.snackbar = true;
-        }
+        this.dialogConfirmModel = true;
       }
     },
+
+    confirmUploadModel() {
+      this.dialog = false;
+      const formData = new FormData();
+      formData.append('file', this.createItem.file);
+      formData.append('description', this.createItem.description);
+      formData.append('timeDetection', this.createItem.timeDetection);
+      this.createFirmware(formData);
+      this.dialogConfirmModel = false;
+      if (this.success) {
+        this.snackbar = true;
+      } else {
+        this.snackbarFail = true;
+        // this.snackbar = true;
+      }
+    },
+
     resetValue() {
       this.createItem.description = null;
       this.createItem.file = null;
@@ -608,6 +668,7 @@ export default {
     },
     activeFirmwareDone() {
       this.dialogConfirm = false;
+      // const activeFirmware = this.getFirmwares.filter((item) => item.active);
       this.updateFirmware(this.firmwareId);
       this.firmwareId = '';
     },
@@ -647,19 +708,24 @@ export default {
         this.check.checkTime1
         // && this.check.checkFile
       ) {
-        this.dialogTrain = false;
-        const formData = new FormData();
-        formData.append('file', this.createItemTrain.file);
-        formData.append('description', this.createItemTrain.description);
-        formData.append('timeDetection', this.createItemTrain.timeDetection);
-        this.createFirmwareFromDataset(formData);
-        if (this.successTrain) {
-          this.loading = true;
-          this.snackbarTrain = true;
-        } else {
-          // this.snackbarFail = true;
-          this.snackbar = true;
-        }
+        this.dialogConfirmDataset = true;
+      }
+    },
+
+    confirmTrainDataset() {
+      this.dialogTrain = false;
+      const formData = new FormData();
+      formData.append('file', this.createItemTrain.file);
+      formData.append('description', this.createItemTrain.description);
+      formData.append('timeDetection', this.createItemTrain.timeDetection);
+      this.createFirmwareFromDataset(formData);
+      this.dialogConfirmDataset = false;
+      if (this.successTrain) {
+        this.loading = true;
+        this.snackbarTrain = true;
+      } else {
+        // this.snackbarFail = true;
+        this.snackbarTrain = true;
       }
     },
   },

@@ -250,15 +250,20 @@ const mutations = {
     state.firmwares.isLoading = true;
   },
   UPDATE_FIRMWARE_SUCCESS(state, firmware) {
-    console.log(state.firmwares);
+    state.firmwares.newlyCreated = state.firmwares.data.results;
+    state.firmwares.newlyCreated = state.firmwares.newlyCreated.filter(
+      (item) => item.active,
+    ).map((items) => ({ ...items, active: false }));
     state.firmwares.data.results = state.firmwares.data.results
       .filter(
-        (item) => item.active,
+        (item) => !item.active,
       )
       .filter(
         (item) => firmware.firmwareId !== item.firmwareId,
       );
-    // state.firmwares.data.results.push(firmware);
+
+    state.firmwares.data.results.push(state.firmwares.newlyCreated[0]);
+
     state.firmwares.data.results.push(firmware);
     state.firmwares.data.results = [...state.firmwares.data.results];
     state.firmwares.data.results.sort((a, b) => b - a);
@@ -635,7 +640,7 @@ const actions = {
       try {
         commit(mutationTypes.UPDATE_FIRMWARE_REQUEST);
         const res = await window.axios.put(`/api/v1/firmwares/${id}`);
-        if (res.status === 200) {
+        if (res.status === 201) {
           commit(mutationTypes.UPDATE_FIRMWARE_SUCCESS, res.data.data);
         } else {
           commit(mutationTypes.UPDATE_FIRMWARE_FAILURE);
