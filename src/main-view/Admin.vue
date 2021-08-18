@@ -57,16 +57,23 @@
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-      <!-- <v-toolbar color="white" width="40" dense>
-        <v-toolbar-title style="color: #727cf5" > Training...</v-toolbar-title>
+      <v-toolbar color="white" width="40" dense v-if="loadingTraining">
+        <v-toolbar-title style="color: #727cf5"> Training...</v-toolbar-title>
         <v-progress-linear
-          :active="loading"
-          :indeterminate="loading"
+          :active="loadingTraining"
+          :indeterminate="loadingTraining"
           absolute
           bottom
           color="deep-purple accent-4"
         ></v-progress-linear>
-      </v-toolbar> -->
+      </v-toolbar>
+      <v-card v-if="loadingNotification" color="green">
+        <div class="d-flex">
+          <v-card-text style="color: white">Finish Training Process</v-card-text>
+          <v-btn color="white" outlined class="mt-2 mr-2" @click="change" to="/model-version-management" v-if="!checkRouteName"> View </v-btn>
+          <v-btn color="white" outlined class="mt-2 mr-2" @click="change2" v-else> Refresh </v-btn>
+        </div>
+      </v-card>
       <!--
       <profile-menu v-if="!isLoadingUser" /> -->
     </v-app-bar>
@@ -125,7 +132,6 @@ import authenticationMixins from '../components/mixins/authentication';
 export default {
   name: 'AdminView',
   mixins: [authenticationMixins],
-  // props: ['loading'],
   components: {
     SideMenuBarAdmin,
     // profileMenu,
@@ -136,6 +142,18 @@ export default {
     },
     isLoadingUser() {
       return this.$store.state.user.user.isLoading;
+    },
+    loadingTraining() {
+      return this.$store.state.user.loading.loadingTraining;
+    },
+    loadingNotification() {
+      return this.$store.state.user.loading.loadingNotification;
+    },
+    currentRouteName() {
+      return this.$route.name;
+    },
+    checkRouteName() {
+      return this.currentRouteName === 'ModelVersion';
     },
     // hasMessagingToken() {
     //   return localStorage.getItem('messagingToken') != null;
@@ -150,26 +168,35 @@ export default {
       type: 'temporary',
       clipped: true,
     },
-    // loading: true,
   }),
   methods: {
     ...mapActions({
       clearUserData: 'user/clearUserData',
       updateUser: 'user/updateUser',
       getUser: 'user/getUser',
+      updateLoadingNotification: 'user/updateLoadingNotification',
     }),
 
     logout() {
       this.$router.push('login');
       window.$cookies.remove('token');
     },
+
+    change() {
+      this.updateLoadingNotification(false);
+    },
+
+    change2() {
+      this.updateLoadingNotification(false);
+      this.$router.go();
+    },
   },
   watch: {
-    loading(val) {
+    loadingTraining(val) {
       if (!val) return;
 
       // eslint-disable-next-line no-return-assign
-      setTimeout(() => (this.loading = false), 1000 * 60 * 5);
+      setTimeout(() => this.updateLoadingNotification(true), 1000 * 60 * 3);
     },
   },
   created() {

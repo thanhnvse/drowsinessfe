@@ -69,7 +69,7 @@
                     createItem.serialId = '';
                     createItem.active = true;
                     check.checkName = true;
-                    check.checkId = true;
+                    check.checkId = false;
                     check.checkIdFormat = true;
                     check.checkIdDup = false;
                   "
@@ -160,7 +160,7 @@
                       style="font-size: 16px"
                       class="font-weight-thin pa-0 py-0 pt-2 font-nunito"
                       solo
-                      @change="changeValue0"
+                      @change="changeValue"
                       :error-messages="!getCheckName ? 'The device name can not blank' : ''"
                     ></v-text-field>
                   </v-col>
@@ -182,20 +182,32 @@
                       solo
                       @change="changeValue"
                       :error-messages="
-                        !getCheckId
+                        getCheckId
                           ? 'The Serial ID can not blank'
                           : !getCheckIdFormat
                           ? 'The Serial ID has format XX:XX:XX:XX:XX:XX'
-                          : getCheckIdDup
-                          ? 'The serial ID has existed'
-                          : ''
+                          : !getCheckIdDup
+                          ? ''
+                          : 'The serial ID has existed'
                       "
                     ></v-text-field>
                   </v-col>
                 </v-row>
               </v-col>
               <v-card-actions class="d-flex justify-center">
-                <v-btn color="grey darken-1" text @click="dialog = false"> Cancel </v-btn>
+                <v-btn
+                  color="grey darken-1"
+                  text
+                  @click="
+                    dialog = false;
+                    this.check.checkName = true;
+                    this.check.checkId = false;
+                    this.check.checkIdFormat = true;
+                    this.check.checkIdDup = false;
+                  "
+                >
+                  Cancel
+                </v-btn>
                 <v-btn color="#727CF5" text @click="createDeviceInfo"> Create </v-btn>
               </v-card-actions>
             </v-card>
@@ -345,7 +357,7 @@
                   <v-col cols="9" class="d-flex justify-center">
                     <v-text-field
                       v-model="updateItem.data.deviceName"
-                      @change="changeValue0"
+                      @change="changeValue"
                       :error-messages="!getCheckName ? 'The device name can not blank' : ''"
                       placeholder="Fill in device name"
                       style="font-size: 16px"
@@ -366,15 +378,15 @@
                   <v-col cols="5" class="d-flex justify-center">
                     <v-text-field
                       v-model="updateItem.data.serialId"
-                      @change="changeValue1"
+                      @change="changeValue"
                       :error-messages="
-                        !getCheckId
+                        getCheckId
                           ? 'The Serial ID can not blank'
                           : !getCheckIdFormat
                           ? 'The Serial ID has format XX:XX:XX:XX:XX:XX'
                           : !getCheckIdDup
-                          ? 'The serial ID has existed'
-                          : ''
+                          ? ''
+                          : 'The serial ID has existed'
                       "
                       placeholder="Fill in serial ID"
                       style="font-size: 16px"
@@ -394,7 +406,19 @@
                 </v-row>
               </v-col>
               <v-card-actions class="d-flex justify-center">
-                <v-btn color="grey darken-1" text @click="dialogUpdate = false"> Cancel </v-btn>
+                <v-btn
+                  color="grey darken-1"
+                  text
+                  @click="
+                    dialogUpdate = false;
+                    this.check.checkName = true;
+                    this.check.checkId = false;
+                    this.check.checkIdFormat = true;
+                    this.check.checkIdDup = false;
+                  "
+                >
+                  Cancel
+                </v-btn>
                 <v-btn color="#727CF5" text @click="updateDeviceInfo" :disabled="!this.updatable">
                   Save
                 </v-btn>
@@ -516,9 +540,9 @@ export default {
     timeout: 2000,
     check: {
       checkName: true,
-      checkId: true,
+      checkId: false,
       checkIdFormat: true,
-      checkIdDup: true,
+      checkIdDup: false,
     },
     serialId: null,
   }),
@@ -543,9 +567,10 @@ export default {
     changeDevices() {
       if (this.searchQuery === null) {
         if (this.roomStatus.selected === 'ALL') {
+          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
           return this.devices
-            .map((items, no) => ({ ...items, no: no + 1 }))
-            .sort((a, b) => b.createdAt - a.createdAt);
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .map((items, no) => ({ ...items, no: no + 1 }));
         }
         if (this.roomStatus.selected === 'ACTIVE') {
           return this.devices
@@ -605,10 +630,6 @@ export default {
     },
 
     drivers() {
-      // if (this.$store.state.user.driversInDevice.data !== null) {
-      //   return this.$store.state.user.driversInDevice.data.results.map((items, no) => ({ ...items, no: no + 1 }));
-      // }
-      // return [];
       return this.$store.state.user.driversInDevice.data.results;
     },
   },
@@ -628,10 +649,13 @@ export default {
     createDeviceInfo() {
       if (this.createItem.deviceName === '' || this.createItem.deviceName === null) {
         this.check.checkName = false;
+      } else {
+        this.check.checkName = true;
       }
       if (this.createItem.serialId === '' || this.createItem.serialId === null) {
-        this.check.checkId = false;
+        this.check.checkId = true;
       } else {
+        this.check.checkId = false;
         this.check.checkIdFormat = this.getValidSerial(this.createItem.serialId);
         if (this.check.checkIdFormat) {
           this.check.checkIdDup = this.checkDuplicated(this.createItem.serialId);
@@ -639,7 +663,7 @@ export default {
       }
       if (
         this.check.checkName &&
-        this.check.checkId &&
+        !this.check.checkId &&
         this.check.checkIdFormat &&
         !this.check.checkIdDup
       ) {
@@ -652,6 +676,7 @@ export default {
           // this.snackbarFail = true;
           this.snackbar = true;
         }
+
         // this.check.checkName = true;
         // this.check.checkId = true;
         // this.check.checkIdFormat = true;
@@ -678,10 +703,11 @@ export default {
 
     checkDuplicatedUpdate(value) {
       let a = false;
-      const rest = this.getRestDevice(value);
+      const rest = this.getRestDevice(this.serialId);
+      // console.log(rest);
       // eslint-disable-next-line array-callback-return
       rest.filter((item2) => {
-        if (item2.serialId === value) {
+        if (item2.serialId.trim() === value.trim()) {
           a = true;
         }
       });
@@ -689,11 +715,13 @@ export default {
     },
 
     checkSameValue(value) {
-      let a = false;
-      if (value === this.serialId) {
-        a = true;
-      }
-      console.log(a);
+      let a = true;
+      // eslint-disable-next-line array-callback-return
+      this.getRestDevice(value).filter((item) => {
+        if (item.serialId === value) {
+          a = false;
+        }
+      });
       return a;
     },
 
@@ -710,44 +738,54 @@ export default {
       this.updatable = false;
       this.serialId = item.serialId;
       // // default false
-      // this.check.checkName = true;
-      // this.check.checkId = true;
-      // this.check.checkIdFormat = true;
-      // this.check.checkIdDup = true;
+      this.check.checkName = true;
+      this.check.checkId = false;
+      this.check.checkIdFormat = true;
+      this.check.checkIdDup = false;
     },
 
     updateDeviceInfo() {
       if (this.updateItem.data.deviceName === '' || this.updateItem.data.deviceName === null) {
         this.check.checkName = false;
+      } else {
+        this.check.checkName = true;
       }
       if (this.updateItem.data.serialId === '' || this.updateItem.data.serialId === null) {
-        this.check.checkId = false;
+        this.check.checkId = true;
       } else {
+        this.check.checkId = false;
         this.check.checkIdFormat = this.getValidSerial(this.updateItem.data.serialId);
         if (this.check.checkIdFormat) {
-          if (this.checkSameValue(this.updateItem.data.serialId)) {
+          // if (this.checkSameValue(this.updateItem.data.serialId)) {
+          //   this.check.checkIdDup = false;
+          // } else {
+          //   this.check.checkIdDup = this.checkDuplicatedUpdate(this.updateItem.data.serialId);
+          // }
+          if (this.checkSameValue || !this.checkDuplicatedUpdate(this.updateItem.data.serialId)) {
+            this.check.checkIdDup = false;
+          }
+          if (this.checkDuplicatedUpdate(this.updateItem.data.serialId)) {
             this.check.checkIdDup = true;
-          } else {
-            this.check.checkIdDup = this.checkDuplicatedUpdate(this.updateItem.data.serialId);
           }
         }
       }
 
       if (
         this.check.checkName &&
-        this.check.checkId &&
+        !this.check.checkId &&
         this.check.checkIdFormat &&
-        this.check.checkIdDup
+        !this.check.checkIdDup
       ) {
         this.dialogUpdate = false;
         this.updateDevice(this.updateItem);
         if (this.success) {
           this.snackbarUpdate = true;
           // reset value
-          this.check.checkName = false;
-          this.check.checkId = false;
-          this.check.checkIdFormat = false;
-          this.check.checkIdDup = false;
+
+          // this.check.checkName = true;
+          // this.check.checkId = false;
+          // this.check.checkIdFormat = true;
+          // this.check.checkIdDup = false;
         } else {
           this.snackbarUpdate = true;
           // this.snackbarUpdateFail = true;

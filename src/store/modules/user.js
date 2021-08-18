@@ -42,13 +42,10 @@ const myState = () => ({
     success: null,
     error: null,
   },
-  // deals: {
-  //   data: [],
-  //   isLoading: false,
-  //   success: null,
-  //   error: null,
-  //   newlyCreated: null,
-  // },
+  loading: {
+    loadingTraining: false,
+    loadingNotification: false,
+  },
 });
 
 const myGetters = {
@@ -113,12 +110,17 @@ const mutationTypes = {
   UPDATE_FIRMWARE_REQUEST: 'UPDATE_FIRMWARE_REQUEST',
   UPDATE_FIRMWARE_SUCCESS: 'UPDATE_FIRMWARE_SUCCESS',
   UPDATE_FIRMWARE_FAILURE: 'UPDATE_FIRMWARE_FAILURE',
+  UPDATE_FIRMWAREINFO_REQUEST: 'UPDATE_FIRMWAREINFO_REQUEST',
+  UPDATE_FIRMWAREINFO_SUCCESS: 'UPDATE_FIRMWAREINFO_SUCCESS',
+  UPDATE_FIRMWAREINFO_FAILURE: 'UPDATE_FIRMWAREINFO_FAILURE',
   GET_DRIVERSINDEVICE_REQUEST: 'GET_DRIVERSINDEVICE_REQUEST',
   GET_DRIVERSINDEVICE_SUCCESS: 'GET_DRIVERSINDEVICE_SUCCESS',
   GET_DRIVERSINDEVICE_FAILURE: 'GET_DRIVERSINDEVICE_FAILURE',
   CREATE_DATASET_REQUEST: 'CREATE_DATASET_REQUEST',
   CREATE_DATASET_SUCCESS: 'CREATE_DATASET_SUCCESS',
   CREATE_DATASET_FAILURE: 'CREATE_DATASET_FAILURE',
+  UPDATE_LOADING_NOTIFICATION: 'UPDATE_LOADING_NOTIFICATION',
+  UPDATE_LOADING_SUCCESS: 'UPDATE_LOADING_SUCCESS',
 };
 const mutations = {
   CLEAR_USER_DATA(state) {
@@ -166,7 +168,6 @@ const mutations = {
     state.devices.success = false;
     state.devices.error = error;
   },
-
   GET_DRIVERSINDEVICE_REQUEST(state) {
     state.driversInDevice.isLoading = true;
   },
@@ -181,14 +182,13 @@ const mutations = {
     state.driversInDevice.success = false;
     state.driversInDevice.error = error;
   },
-
   CREATE_DEVICE_REQUEST(state) {
     state.devices.isLoading = true;
   },
   CREATE_DEVICE_SUCCESS(state, device) {
     console.log(state.devices);
     state.devices.data.results.push(device);
-    state.devices.data.results.sort((a, b) => b - a);
+    // state.devices.data.results.sort((a, b) => b - a);
     // state.bookings.newlyCreated = booking;
     state.devices.isLoading = false;
     state.devices.success = true;
@@ -198,7 +198,6 @@ const mutations = {
     state.devices.success = false;
     state.devices.error = error;
   },
-
   UPDATE_DEVICE_REQUEST(state) {
     state.devices.isLoading = true;
   },
@@ -215,7 +214,6 @@ const mutations = {
     state.devices.success = false;
     state.devices.isLoading = false;
   },
-
   GET_TRACKINGS_REQUEST(state) {
     state.trackings.isLoading = true;
   },
@@ -251,16 +249,12 @@ const mutations = {
   },
   UPDATE_FIRMWARE_SUCCESS(state, firmware) {
     state.firmwares.newlyCreated = state.firmwares.data.results;
-    state.firmwares.newlyCreated = state.firmwares.newlyCreated.filter(
-      (item) => item.active,
-    ).map((items) => ({ ...items, active: false }));
+    state.firmwares.newlyCreated = state.firmwares.newlyCreated
+      .filter((item) => item.active)
+      .map((items) => ({ ...items, active: false }));
     state.firmwares.data.results = state.firmwares.data.results
-      .filter(
-        (item) => !item.active,
-      )
-      .filter(
-        (item) => firmware.firmwareId !== item.firmwareId,
-      );
+      .filter((item) => !item.active)
+      .filter((item) => firmware.firmwareId !== item.firmwareId);
 
     state.firmwares.data.results.push(state.firmwares.newlyCreated[0]);
 
@@ -272,6 +266,36 @@ const mutations = {
     state.firmwares.success = true;
   },
   UPDATE_FIRMWARE_FAILURE(state, error) {
+    state.firmwares.isLoading = false;
+    state.firmwares.success = false;
+    state.firmwares.error = error;
+  },
+  UPDATE_FIRMWAREINFO_REQUEST(state) {
+    state.firmwares.isLoading = true;
+  },
+  UPDATE_FIRMWAREINFO_SUCCESS(state, firmware) {
+    // state.firmwares.newlyCreated = state.firmwares.data.results;
+    // state.firmwares.newlyCreated = state.firmwares.newlyCreated
+    //   .filter((item) => item.active)
+    //   .map((items) => ({ ...items, active: false }));
+    // state.firmwares.data.results = state.firmwares.data.results
+    //   .filter((item) => !item.active)
+    //   .filter((item) => firmware.firmwareId !== item.firmwareId);
+
+    // state.firmwares.data.results.push(state.firmwares.newlyCreated[0]);
+
+    state.firmwares.data.results = state.firmwares.data.results.filter(
+      (item) => firmware.firmwareId !== item.firmwareId,
+    );
+
+    state.firmwares.data.results.push(firmware);
+    state.firmwares.data.results = [...state.firmwares.data.results];
+    state.firmwares.data.results.sort((a, b) => b - a);
+    state.firmwares.newlyCreated = firmware;
+    state.firmwares.isLoading = false;
+    state.firmwares.success = true;
+  },
+  UPDATE_FIRMWAREINFO_FAILURE(state, error) {
     state.firmwares.isLoading = false;
     state.firmwares.success = false;
     state.firmwares.error = error;
@@ -289,7 +313,6 @@ const mutations = {
     state.firmwares.success = false;
     state.firmwares.error = error;
   },
-
   CREATE_DATASET_REQUEST(state) {
     state.dataset.isLoading = true;
   },
@@ -303,71 +326,6 @@ const mutations = {
     state.dataset.success = false;
     state.dataset.error = error;
   },
-  // CREATE_DEAL_REQUEST(state) {
-  //   state.deals.isLoading = false;
-  // },
-  // CREATE_DEAL_SUCCESS(state, deal) {
-  //   state.deals.data.push(deal);
-  //   state.deals.newlyCreated = deal;
-  //   state.deals.success = true;
-  //   state.deals.isLoading = false;
-  // },
-  // CREATE_DEAL_FAILURE(state, error) {
-  //   state.deals.success = false;
-  //   state.deals.error = error;
-  // },
-  // GET_DEAL_REQUEST(state) {
-  //   state.deals.isLoading = false;
-  // },
-  // GET_DEAL_SUCCESS(state, deal) {
-  //   state.deals.data.push(deal);
-  //   state.deals.newlyCreated = deal;
-  //   state.deals.success = true;
-  //   state.deals.isLoading = false;
-  // },
-  // GET_DEAL_FAILURE(state, error) {
-  //   state.deals.success = false;
-  //   state.deals.error = error;
-  // },
-  // CANCEL_DEAL_REQUEST(state) {
-  //   state.deals.isLoading = true;
-  // },
-  // CANCEL_DEAL_SUCCESS(state, dealId) {
-  //   state.deals.isLoading = false;
-  //   state.deals.success = true;
-  //   const res = state.deals.data.filter((deal) => deal.dealId === dealId);
-  //   res[0].status = 'CANCEL';
-  // },
-  // CANCEL_DEAL_FAILURE(state, error) {
-  //   state.deals.isLoading = false;
-  //   state.deals.error = error;
-  // },
-  // CANCEL_BOOKING_REQUEST(state) {
-  //   state.bookings.isLoading = true;
-  // },
-  // CANCEL_BOOKING_SUCCESS(state, bookingId) {
-  //   state.bookings.isLoading = false;
-  //   state.bookings.success = true;
-  //   const res = state.bookings.data.filter((book) => book.bookingId === bookingId);
-  //   res[0].status = 'CANCEL';
-  // },
-  // CANCEL_BOOKING_FAILURE(state, error) {
-  //   state.bookings.isLoading = false;
-  //   state.bookings.error = error;
-  // },
-  // DONE_BOOKING_REQUEST(state) {
-  //   state.bookings.isLoading = true;
-  // },
-  // DONE_BOOKING_SUCCESS(state, bookingId) {
-  //   state.bookings.isLoading = false;
-  //   state.bookings.success = true;
-  //   const res = state.bookings.data.filter((book) => book.bookingId === bookingId);
-  //   res[0].status = 'DONE';
-  // },
-  // DONE_BOOKING_FAILURE(state, error) {
-  //   state.bookings.isLoading = false;
-  //   state.bookings.error = error;
-  // },
   UPDATE_USER_REQUEST(state) {
     state.drivers.isLoading = true;
   },
@@ -384,6 +342,13 @@ const mutations = {
     state.drivers.error = error;
     state.drivers.success = false;
     state.drivers.isLoading = false;
+  },
+  UPDATE_LOADING_SUCCESS(state, loading) {
+    state.loading.loadingTraining = loading;
+  },
+  UPDATE_LOADING_NOTIFICATION(state, loading) {
+    state.loading.loadingTraining = false;
+    state.loading.loadingNotification = loading;
   },
 };
 
@@ -576,31 +541,6 @@ const actions = {
     }
   },
 
-  // async getOneBooking({ commit, state }, bookingId) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       const currentIds = state.bookings.data.map((booking) => booking.bookingId);
-  //       if (!currentIds.includes(bookingId)) {
-  //         commit(mutationTypes.GET_BOOKING_REQUEST);
-  //         const res = await window.axios.get(`/api/v1/bookings/${bookingId}`);
-  //         if (res.status === 200) {
-  //           res.data.data.new = true;
-  //           commit(mutationTypes.GET_BOOKING_SUCCESS, res.data.data);
-  //         } else {
-  //           commit(mutationTypes.GET_BOOKING_FAILURE);
-  //         }
-  //       } else {
-  //         console.log('this booking is already in store');
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.GET_BOOKING_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('You have to login before get a new booking');
-  //   }
-  // },
   async createFirmware({ commit }, firmware) {
     const userId = window.$cookies.get('userId');
     if (userId) {
@@ -652,160 +592,33 @@ const actions = {
       throw new Error('userId or user.data null');
     }
   },
-  // async getDeals({ commit, state }) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       commit(mutationTypes.GET_DEALS_REQUEST);
-  //       const res = await window.axios.get(`/api/v1/${role}/${userId}/deals`);
-  //       if (res.status === 200) {
-  //         commit(mutationTypes.GET_DEALS_SUCCESS, res.data.data);
-  //       } else {
-  //         commit(mutationTypes.GET_DEALS_FAILURE);
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.GET_DEALS_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('You have to login before get deals');
-  //   }
-  // },
-  // async createDeal({ commit, state }, deal) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       commit(mutationTypes.CREATE_DEAL_REQUEST);
-  //       const res = await window.axios.post('/api/v1/deals', deal);
-  //       if (res.status === 201) {
-  //         commit(mutationTypes.CREATE_DEAL_SUCCESS, res.data.data);
-  //       } else {
-  //         commit(mutationTypes.CREATE_DEAL_FAILURE);
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.CREATE_DEAL_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('You have to login before get deals');
-  //   }
-  // },
-  // async getDeal({ commit, state }, dealIds) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   const currentIds = state.deals.data.map((deal) => deal.dealId);
-  //   const newIds = dealIds.filter((newId) => !currentIds.includes(newId));
-  //   if (newIds.lenght > 0) {
-  //     if (userId && role && state.user.data) {
-  //       try {
-  //         commit(mutationTypes.GET_DEAL_REQUEST);
-  //         const res = await window.axios.get(`/api/v1/deals/${newIds[0]}`);
-  //         if (res.status === 200) {
-  //           commit(mutationTypes.GET_DEAL_SUCCESS, res.data.data);
-  //         } else {
-  //           commit(mutationTypes.GET_DEAL_FAILURE);
-  //         }
-  //       } catch (error) {
-  //         commit(mutationTypes.GET_DEAL_FAILURE, error);
-  //       }
-  //     } else {
-  //       throw new Error('You have to login before get deals');
-  //     }
-  //   } else {
-  //     console.log('not a new deal');
-  //   }
-  // },
-  // async cancelDeal({ commit, state }, dealId) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       const deal = state.deals.data.filter((item) => item.dealId === dealId)[0];
-  //       if (deal) {
-  //         commit(mutationTypes.CANCEL_DEAL_REQUEST);
-  //         const res = await window.axios.put('/api/v1/deals', {
-  //           dealId,
-  //           renterId: deal.renter.renterId,
-  //           vendorId: deal.vendor.vendorId,
-  //           typeId: deal.type.typeId,
-  //           status: 'CANCELED',
-  //           offeredPrice: deal.offeredPrice,
-  //         });
-  //         if (res.status === 200) {
-  //           commit(mutationTypes.CANCEL_DEAL_SUCCESS, res.data.data);
-  //         }
-  //       } else {
-  //         console.log('deal is null');
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.CANCEL_DEAL_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('you are not loged in');
-  //   }
-  // },
-  // async cancelBooking({ commit, state }, bookingId) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       const booking = state.bookings.data.filter((item) => item.bookingId === bookingId)[0];
-  //       if (booking) {
-  //         commit(mutationTypes.CANCEL_BOOKING_REQUEST);
-  //         const res = await window.axios.put(`/api/v1/bookings/${bookingId}`, {
-  //           bookingId,
-  //           dealId: booking.deal.dealId,
-  //           typeId: booking.type.typeId,
-  //           renterId: booking.renter.renterId,
-  //           vendorId: booking.vendor.vendorId,
-  //           status: 'CANCELLED',
-  //           meetTime: booking.meetTime,
-  //           qrCode: booking.qrCode,
-  //         });
-  //         if (res.status === 200) {
-  //           commit(mutationTypes.CANCEL_BOOKING_SUCCESS, res.data.data);
-  //         }
-  //       } else {
-  //         console.log(`booking ${bookingId} is not existed in store`);
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.CREATE_BOOKING_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('you are not loged in');
-  //   }
-  // },
-  // async updateBookingStatus({ commit, state }, bookingId) {
-  //   const userId = window.$cookies.get('userId');
-  //   const role = window.$cookies.get('role');
-  //   if (userId && role && state.user.data) {
-  //     try {
-  //       const booking = state.bookings.data.filter((item) => item.bookingId === bookingId)[0];
-  //       if (booking) {
-  //         commit(mutationTypes.DONE_BOOKING_REQUEST);
-  //         const res = await window.axios.put(`/api/v1/bookings/${bookingId}`, {
-  //           bookingId,
-  //           dealId: booking.deal ? booking.deal.dealId : null,
-  //           typeId: booking.type.typeId,
-  //           renterId: booking.renter.renterId,
-  //           vendorId: booking.vendor.vendorId,
-  //           status: 'DONE',
-  //           meetTime: booking.meetTime,
-  //           qrCode: booking.qrCode,
-  //         });
-  //         if (res.status === 200) {
-  //           commit(mutationTypes.DONE_BOOKING_SUCCESS, bookingId);
-  //         }
-  //       } else {
-  //         console.log(`booking ${bookingId} is not existed in store`);
-  //       }
-  //     } catch (error) {
-  //       commit(mutationTypes.DONE_BOOKING_FAILURE, error);
-  //     }
-  //   } else {
-  //     throw new Error('you are not loged in');
-  //   }
-  // },
+
+  async updateFirmwareInfo({ commit }, firmware) {
+    const userId = window.$cookies.get('userId');
+    const id = firmware.get('firmwareId');
+    if (userId) {
+      try {
+        commit(mutationTypes.UPDATE_FIRMWAREINFO_REQUEST);
+        const res = await window.axios.put(`/api/v1/firmwares/${id}/info`, firmware);
+        if (res.status === 200) {
+          commit(mutationTypes.UPDATE_FIRMWAREINFO_SUCCESS, res.data.data);
+        } else {
+          commit(mutationTypes.UPDATE_FIRMWAREINFO_FAILURE);
+        }
+      } catch (error) {
+        commit(mutationTypes.UPDATE_FIRMWAREINFO_FAILURE, error);
+      }
+    } else {
+      throw new Error('userId or user.data null');
+    }
+  },
+
+  async updateLoading({ commit }, loading) {
+    commit(mutationTypes.UPDATE_LOADING_SUCCESS, loading);
+  },
+  async updateLoadingNotification({ commit }, loading) {
+    commit(mutationTypes.UPDATE_LOADING_NOTIFICATION, loading);
+  },
 };
 
 export default {
