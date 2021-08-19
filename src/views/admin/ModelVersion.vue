@@ -827,15 +827,15 @@ export default {
       formData.append('file', this.createItemTrain.file);
       formData.append('description', this.createItemTrain.description);
       formData.append('timeDetection', this.createItemTrain.timeDetection);
-      this.createFirmwareFromDataset(formData);
+      // this.createFirmwareFromDataset(formData);
       this.dialogConfirmDataset = false;
-      if (this.successTrain) {
-        this.updateLoading(true);
-        this.snackbarTrain = true;
-      } else {
-        // this.snackbarFail = true;
-        this.snackbarTrain = true;
-      }
+      // if (this.successTrain) {
+      this.updateLoading(true);
+      this.snackbarTrain = true;
+      // } else {
+      //   // this.snackbarFail = true;
+      //   this.snackbarTrain = true;
+      // }
     },
 
     editFirmware(item) {

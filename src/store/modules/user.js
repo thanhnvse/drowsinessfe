@@ -344,9 +344,11 @@ const mutations = {
     state.drivers.isLoading = false;
   },
   UPDATE_LOADING_SUCCESS(state, loading) {
+    console.log('UPDATE_LOADING_SUCCESS');
     state.loading.loadingTraining = loading;
   },
   UPDATE_LOADING_NOTIFICATION(state, loading) {
+    console.log('UPDATE_LOADING_NOTIFICATION');
     state.loading.loadingTraining = false;
     state.loading.loadingNotification = loading;
   },
@@ -614,9 +616,11 @@ const actions = {
   },
 
   async updateLoading({ commit }, loading) {
+    console.log('updateLoading');
     commit(mutationTypes.UPDATE_LOADING_SUCCESS, loading);
   },
   async updateLoadingNotification({ commit }, loading) {
+    console.log('updateLoadingNotification');
     commit(mutationTypes.UPDATE_LOADING_NOTIFICATION, loading);
   },
 };
