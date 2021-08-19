@@ -37,6 +37,9 @@
                     class="text-gray font-nunito size9rem mt-2"
                     >Firmware Management</span
                   >
+                  <v-btn icon dark color="#727CF5">
+                    <v-icon small @click="refresh"> fas fa-sync </v-icon>
+                  </v-btn>
                 </div>
               </v-col>
               <v-col cols="4" class="d-flex justify-end">
@@ -690,7 +693,9 @@ export default {
     download(url) {
       window.location.href = url;
     },
-
+    refresh() {
+      this.$router.go();
+    },
     activeFirmware(item) {
       this.dialogConfirm = true;
       this.firmwareId = item.firmwareId;

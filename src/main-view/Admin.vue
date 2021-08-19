@@ -194,7 +194,6 @@ export default {
   watch: {
     loadingTraining(val) {
       if (!val) return;
-
       // eslint-disable-next-line no-return-assign
       setTimeout(() => this.updateLoadingNotification(true), 1000 * 60 * 3);
     },
