@@ -410,6 +410,25 @@ const actions = {
       throw new Error('userId or user.data null');
     }
   },
+  async banUser({ commit }, newUser) {
+    const userId = window.$cookies.get('userId');
+    const id = newUser.get('userId');
+    if (userId) {
+      try {
+        commit(mutationTypes.UPDATE_USER_REQUEST);
+        const res = await window.axios.put(`/api/v1/user/${id}/ban`, newUser);
+        if (res.status === 200) {
+          commit(mutationTypes.UPDATE_USER_SUCCESS, res.data.data);
+        } else {
+          commit(mutationTypes.UPDATE_USER_FAILURE);
+        }
+      } catch (error) {
+        commit(mutationTypes.UPDATE_USER_FAILURE, error);
+      }
+    } else {
+      throw new Error('userId or user.data null');
+    }
+  },
 
   async getDrivers({ commit }) {
     const userId = window.$cookies.get('userId');

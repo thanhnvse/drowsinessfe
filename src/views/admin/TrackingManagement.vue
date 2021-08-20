@@ -32,6 +32,9 @@
                 clearable
                 style="border-top-right-radius: 0px; border-bottom-right-radius: 0px"
               ></v-text-field>
+              <!-- <v-btn icon>
+                <v-icon>event</v-icon>
+              </v-btn> -->
             </v-col>
             <v-col cols="1" class="d-flex align-center">
               <v-select

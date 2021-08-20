@@ -262,6 +262,14 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-snackbar v-model="snackbar" timeout="1000" color="green">
+            Update user's status successfully!
+            <template v-slot:action="{ attrs }">
+              <v-btn color="white" text v-bind="attrs" @click="snackbar = false" outlined>
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
         </v-col>
       </v-row>
     </v-container>
@@ -277,6 +285,7 @@ export default {
   data: () => ({
     dialog: false,
     dialogConfirm: false,
+    snackbar: false,
     headers: [
       {
         text: 'No',
@@ -406,6 +415,7 @@ export default {
     ...mapActions({
       getDrivers: 'user/getDrivers',
       updateUser: 'user/updateUser',
+      banUser: 'user/banUser',
     }),
     getColor(active) {
       if (active === true) return 'green';
@@ -436,13 +446,25 @@ export default {
       this.updateItem = { ...this.selectedItem };
       this.dialogConfirm = false;
       this.dialog = false;
-      this.updateUser(this.updateItem).then(() => {
+      // this.updateUser(this.updateItem).then(() => {
+      //   this.updatable = false;
+      //   // if (this.drivers.error) {
+      //   //   this.showSnackBar('Update user status fail ', { color: 'red' });
+      //   // } else if (this.user.success) {
+      //   //   this.showSnackBar('Update user status successfully', { color: 'green' });
+      //   // }
+      // });
+      const formData = new FormData();
+      formData.append('active', this.selectedItem.active);
+      formData.append('userId', this.selectedItem.userId);
+      this.banUser(formData).then(() => {
         this.updatable = false;
         // if (this.drivers.error) {
         //   this.showSnackBar('Update user status fail ', { color: 'red' });
         // } else if (this.user.success) {
         //   this.showSnackBar('Update user status successfully', { color: 'green' });
         // }
+        this.snackbar = true;
       });
     },
   },
