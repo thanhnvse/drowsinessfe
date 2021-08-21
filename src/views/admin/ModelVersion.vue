@@ -101,7 +101,7 @@
               </template>
             </v-data-table>
             <div class="text-center pt-2">
-              <v-pagination v-model="page" :length="pageCount" color="#727cf5"></v-pagination>
+              <v-pagination v-model="page" :length="pageCount" color="#727cf5" :total-visible="7"></v-pagination>
             </div>
           </v-card>
           <v-dialog v-model="dialog" persistent max-width="500">

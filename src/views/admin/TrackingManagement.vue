@@ -23,7 +23,7 @@
             <v-spacer></v-spacer>
             <v-col cols="3" class="d-flex align-center">
               <v-text-field
-                label="Search by driver"
+                label="Search by tracking"
                 v-model="searchQuery"
                 solo
                 dense
@@ -35,8 +35,17 @@
               <!-- <v-btn icon>
                 <v-icon>event</v-icon>
               </v-btn> -->
+              <v-menu top offset-y :close-on-content-click="false">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn color="#727CF5" icon v-bind="attrs" v-on="on" @click="reset">
+                    <v-icon>event</v-icon>
+                  </v-btn>
+                </template>
+
+                <v-date-picker v-model="dates" color="#727CF5" no-title range></v-date-picker>
+              </v-menu>
             </v-col>
-            <v-col cols="1" class="d-flex align-center">
+            <!-- <v-col cols="1" class="d-flex align-center">
               <v-select
                 v-model="roomStatus.selected"
                 :items="roomStatus.items"
@@ -48,7 +57,7 @@
                 dense
                 class="size-sub-2 font-nunito"
               ></v-select>
-            </v-col>
+            </v-col> -->
           </v-row>
           <v-card class="mt-5 px-5 py-4">
             <div class="d-flex pb-5">
@@ -61,7 +70,6 @@
             <v-data-table
               :headers="headers"
               :items="changeTrackings"
-              :search="searchQuery"
               :page.sync="page"
               :items-per-page="itemsPerPage"
               hide-default-footer
@@ -86,7 +94,7 @@
               </template>
             </v-data-table>
             <div class="text-center pt-2">
-              <v-pagination v-model="page" :length="pageCount" color="#727cf5"></v-pagination>
+              <v-pagination v-model="page" :length="pageCount" color="#727cf5" :total-visible="7"></v-pagination>
             </div>
           </v-card>
           <v-dialog
@@ -323,6 +331,7 @@ export default {
   data: () => ({
     dialog: false,
     dialogConfirm: false,
+    dates: [],
     headers: [
       {
         text: 'No',
@@ -470,57 +479,223 @@ export default {
       });
       return this.allTrackings;
     },
+    // changeTrackings() {
+    //   if (this.searchQuery === null) {
+    //     if (this.roomStatus.selected === 'ALL') {
+    //       if (this.dates !== []) {
+    //         if (this.dates.length === 1) {
+    //           const dateMili = new Date(this.dates[0]);
+    //           const milliToday = dateMili.getTime();
+    //           const nextDateMili = new Date(milliToday + 86400000);
+    //           const miliNext = nextDateMili.getTime();
+    //           return this.getTrackingData
+    //             .filter((item) => item.trackingAt >= milliToday && item.trackingAt < miliNext)
+    //             .map((items, no) => ({ ...items, no: no + 1 }));
+    //         }
+    //         if (this.dates.length === 2) {
+    //           const dateMili = new Date(this.dates[0]);
+    //           const milliToday = dateMili.getTime();
+    //           const dateMili2 = new Date(this.dates[1]);
+    //           const milliToday2 = dateMili2.getTime();
+    //           if (milliToday < milliToday2) {
+    //             return this.getTrackingData
+    //               .filter((item) => item.trackingAt >= milliToday && item.trackingAt < milliToday2)
+    //               .sort((a, b) => b.trackingAt - a.trackingAt)
+    //               .map((items, no) => ({ ...items, no: no + 1 }));
+    //           }
+    //           if (milliToday > milliToday2) {
+    //             return this.getTrackingData
+    //               .filter((item) => item.trackingAt < milliToday && item.trackingAt >= milliToday2)
+    //               .sort((a, b) => b.trackingAt - a.trackingAt)
+    //               .map((items, no) => ({ ...items, no: no + 1 }));
+    //           }
+    //         }
+    //       }
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       return this.getTrackingData
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //     if (this.roomStatus.selected === 'WEEK') {
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       this.dates = [];
+    //       const date = Date.now();
+    //       const weekly = this.getWeekly(date);
+    //       console.log(`${date}  ${weekly}`);
+    //       return this.getTrackingData
+    //         .filter((item) => item.trackingAt >= weekly)
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //     if (this.roomStatus.selected === 'MONTH') {
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       this.dates = [];
+    //       const date = Date.now();
+    //       const month = this.getMonth(date);
+    //       return this.getTrackingData
+    //         .filter((item) => item.trackingAt >= month)
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //   }
+    //   if (this.searchQuery !== null) {
+    //     if (this.roomStatus.selected === 'ALL') {
+    //       if (this.dates !== []) {
+    //         if (this.dates.length === 1) {
+    //           const dateMili = new Date(this.dates[0]);
+    //           const milliToday = dateMili.getTime();
+    //           const nextDateMili = new Date(milliToday + 86400000);
+    //           const miliNext = nextDateMili.getTime();
+    //           return this.getTrackingData
+    //             .filter((item) => item.trackingAt >= milliToday && item.trackingAt < miliNext)
+    //             .filter((item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1)
+    //             .map((items, no) => ({ ...items, no: no + 1 }));
+    //         }
+    //         if (this.dates.length === 2) {
+    //           const dateMili = new Date(this.dates[0]);
+    //           const milliToday = dateMili.getTime();
+    //           const dateMili2 = new Date(this.dates[1]);
+    //           const milliToday2 = dateMili2.getTime();
+    //           if (milliToday < milliToday2) {
+    //             return this.getTrackingData
+    //               .filter((item) => item.trackingAt >= milliToday && item.trackingAt < milliToday2)
+    //               .filter((item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1)
+    //               .sort((a, b) => b.trackingAt - a.trackingAt)
+    //               .map((items, no) => ({ ...items, no: no + 1 }));
+    //           }
+    //           if (milliToday > milliToday2) {
+    //             return this.getTrackingData
+    //               .filter((item) => item.trackingAt < milliToday && item.trackingAt >= milliToday2)
+    //               .filter((item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1)
+    //               .sort((a, b) => b.trackingAt - a.trackingAt)
+    //               .map((items, no) => ({ ...items, no: no + 1 }));
+    //           }
+    //         }
+    //       }
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       return this.getTrackingData
+    //         .filter(
+    //           (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
+    //         )
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //     if (this.roomStatus.selected === 'WEEK') {
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       this.dates = [];
+    //       const date = Date.now();
+    //       const weekly = this.getWeekly(date);
+    //       return this.getTrackingData
+    //         .filter(
+    //           (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
+    //         )
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .filter((item) => item.trackingAt >= weekly)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //     if (this.roomStatus.selected === 'MONTH') {
+    //       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    //       this.dates = [];
+    //       const date = Date.now();
+    //       const month = this.getMonth(date);
+    //       return this.getTrackingData
+    //         .filter(
+    //           (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
+    //         )
+    //         .sort((a, b) => b.trackingAt - a.trackingAt)
+    //         .filter((item) => item.trackingAt >= month)
+    //         .map((items, no) => ({ ...items, no: no + 1 }));
+    //     }
+    //   }
+    //   return null;
+    // },
     changeTrackings() {
       if (this.searchQuery === null) {
-        if (this.roomStatus.selected === 'ALL') {
-          return this.getTrackingData.map((items, no) => ({ ...items, no: no + 1 }));
+        if (this.dates !== []) {
+          if (this.dates.length === 1) {
+            const dateMili = new Date(this.dates[0]);
+            const milliToday = dateMili.getTime();
+            const nextDateMili = new Date(milliToday + 86400000);
+            const miliNext = nextDateMili.getTime();
+            return this.getTrackingData
+              .filter((item) => item.trackingAt >= milliToday && item.trackingAt < miliNext)
+              .map((items, no) => ({ ...items, no: no + 1 }));
+          }
+          if (this.dates.length === 2) {
+            const dateMili = new Date(this.dates[0]);
+            const milliToday = dateMili.getTime();
+            const dateMili2 = new Date(this.dates[1]);
+            const milliToday2 = dateMili2.getTime();
+            if (milliToday < milliToday2) {
+              return this.getTrackingData
+                .filter((item) => item.trackingAt >= milliToday && item.trackingAt < milliToday2)
+                .sort((a, b) => b.trackingAt - a.trackingAt)
+                .map((items, no) => ({ ...items, no: no + 1 }));
+            }
+            if (milliToday > milliToday2) {
+              return this.getTrackingData
+                .filter((item) => item.trackingAt < milliToday && item.trackingAt >= milliToday2)
+                .sort((a, b) => b.trackingAt - a.trackingAt)
+                .map((items, no) => ({ ...items, no: no + 1 }));
+            }
+          }
         }
-        if (this.roomStatus.selected === 'WEEK') {
-          const date = Date.now();
-          const weekly = this.getWeekly(date);
-          console.log(`${date}  ${weekly}`);
-          return this.getTrackingData
-            .filter((item) => item.trackingAt >= weekly)
-            .map((items, no) => ({ ...items, no: no + 1 }));
-        }
-        if (this.roomStatus.selected === 'MONTH') {
-          const date = Date.now();
-          const month = this.getMonth(date);
-          return this.getTrackingData
-            .filter((item) => item.trackingAt >= month)
-            .map((items, no) => ({ ...items, no: no + 1 }));
-        }
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        return this.getTrackingData
+          .sort((a, b) => b.trackingAt - a.trackingAt)
+          .map((items, no) => ({ ...items, no: no + 1 }));
       }
       if (this.searchQuery !== null) {
-        if (this.roomStatus.selected === 'ALL') {
-          return this.getTrackingData
-            .filter(
-              (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
-            )
-            .map((items, no) => ({ ...items, no: no + 1 }));
+        if (this.dates !== []) {
+          if (this.dates.length === 1) {
+            const dateMili = new Date(this.dates[0]);
+            const milliToday = dateMili.getTime();
+            const nextDateMili = new Date(milliToday + 86400000);
+            const miliNext = nextDateMili.getTime();
+            return this.getTrackingData
+              .filter((item) => item.trackingAt >= milliToday && item.trackingAt < miliNext)
+              .filter(
+                (item) => item.user.fullName.toLowerCase().trim().indexOf(this.searchQuery.toLowerCase().trim()) !== -1,
+              )
+              .map((items, no) => ({ ...items, no: no + 1 }));
+          }
+          if (this.dates.length === 2) {
+            const dateMili = new Date(this.dates[0]);
+            const milliToday = dateMili.getTime();
+            const dateMili2 = new Date(this.dates[1]);
+            const milliToday2 = dateMili2.getTime();
+            if (milliToday < milliToday2) {
+              return this.getTrackingData
+                .filter((item) => item.trackingAt >= milliToday && item.trackingAt < milliToday2)
+                .filter(
+                  (item) => item.user.fullName.toLowerCase().trim().indexOf(this.searchQuery.toLowerCase().trim()) !== -1,
+                )
+                .sort((a, b) => b.trackingAt - a.trackingAt)
+                .map((items, no) => ({ ...items, no: no + 1 }));
+            }
+            if (milliToday > milliToday2) {
+              return this.getTrackingData
+                .filter((item) => item.trackingAt < milliToday && item.trackingAt >= milliToday2)
+                .filter(
+                  (item) => item.user.fullName.toLowerCase().trim().indexOf(this.searchQuery.toLowerCase().trim()) !== -1,
+                )
+                .sort((a, b) => b.trackingAt - a.trackingAt)
+                .map((items, no) => ({ ...items, no: no + 1 }));
+            }
+          }
         }
-        if (this.roomStatus.selected === 'WEEK') {
-          const date = Date.now();
-          const weekly = this.getWeekly(date);
-          return this.getTrackingData
-            .filter(
-              (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
-            )
-            .filter((item) => item.trackingAt >= weekly)
-            .map((items, no) => ({ ...items, no: no + 1 }));
-        }
-        if (this.roomStatus.selected === 'MONTH') {
-          const date = Date.now();
-          const month = this.getMonth(date);
-          return this.getTrackingData
-            .filter(
-              (item) => item.user.fullName.toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1,
-            )
-            .filter((item) => item.trackingAt >= month)
-            .map((items, no) => ({ ...items, no: no + 1 }));
-        }
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        return this.getTrackingData
+          .filter((item) => item.user.fullName.toLowerCase().trim().indexOf(this.searchQuery.toLowerCase().trim()) !== -1)
+          .sort((a, b) => b.trackingAt - a.trackingAt)
+          .map((items, no) => ({ ...items, no: no + 1 }));
       }
       return null;
+    },
+
+    test() {
+      return this.getTrackingData
+        .filter((item) => item.user.fullName.toLowerCase().trim().indexOf(this.searchQuery.toLowerCase().trim()) !== -1);
     },
   },
 
@@ -552,6 +727,9 @@ export default {
       getTrackings: 'user/getTrackings',
       getDevices: 'user/getDevices',
     }),
+    reset() {
+      this.dates = [];
+    },
     getColor(active) {
       if (active === true) return 'green';
       return 'red';
